@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { authAPI } from '@/lib/auth';
+import GoogleSignIn from './GoogleSignIn';
+import Image from 'next/image';
+import Link from 'next/link';
 
 interface SignupFormData {
   fullName: string;
@@ -47,8 +50,25 @@ const SignupForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Logo positioned at absolute top-left corner */}
+      <Link href="/" className="absolute top-6 left-8 flex items-center z-10 hover:opacity-80 transition-opacity">
+        <Image
+          src="/images/logo.png"
+          alt="InteliMaster Logo"
+          width={80}
+          height={30}
+          className="h-16 w-auto"
+          priority
+        />
+        <h1 className="text-2xl font-extrabold text-blue-600 ml-3 tracking-tight relative overflow-hidden">
+          <span className="relative z-10">InteliMaster</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-diagonal-sweep"></div>
+        </h1>
+      </Link>
+
       <div className="max-w-md w-full space-y-8">
+
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
@@ -60,7 +80,27 @@ const SignupForm: React.FC = () => {
             </a>
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+
+        {/* Google Sign-In at the top */}
+        <div className="mt-8">
+          <GoogleSignIn 
+            onSuccess={() => router.push('/dashboard')}
+            onError={(error) => setError(error)}
+          />
+        </div>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-500">Or sign up with email</span>
+            </div>
+          </div>
+        </div>
+
+        <form className="mt-6 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">

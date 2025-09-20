@@ -227,3 +227,4 @@ echo "  2. Authentication config: sudo cat /etc/postgresql/*/main/pg_hba.conf"
 echo "  3. Network connectivity: telnet localhost 5432"
 
 
+

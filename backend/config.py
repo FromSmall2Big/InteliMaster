@@ -26,3 +26,6 @@ PORT = int(os.getenv("PORT", "8000"))
 # Frontend configuration
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+

@@ -4,12 +4,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Optional
+from pydantic import BaseModel
+import json
+import base64
+import requests
 
 from database import SessionLocal, engine, Base
 from models import User
 from schemas import UserCreate, UserResponse, Token
 from auth import get_password_hash, verify_password, create_access_token, get_current_user
-from config import FRONTEND_URL, HOST, PORT
+from config import FRONTEND_URL, HOST, PORT, GOOGLE_CLIENT_ID
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -27,6 +31,10 @@ app.add_middleware(
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Google Auth schema
+class GoogleAuthRequest(BaseModel):
+    credential: str
 
 # Dependency to get database session
 def get_db():
@@ -89,6 +97,55 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 @app.get("/users/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+@app.post("/auth/google", response_model=Token)
+async def google_auth(request: GoogleAuthRequest, db: Session = Depends(get_db)):
+    try:
+        # Decode the JWT token from Google
+        # Split the token into header, payload, and signature
+        parts = request.credential.split('.')
+        if len(parts) != 3:
+            raise HTTPException(status_code=400, detail="Invalid credential format")
+        
+        # Decode the payload (add padding if needed)
+        payload = parts[1]
+        payload += '=' * (4 - len(payload) % 4)  # Add padding
+        decoded_payload = base64.urlsafe_b64decode(payload)
+        user_info = json.loads(decoded_payload)
+        
+        # Extract user information
+        email = user_info.get('email')
+        name = user_info.get('name')
+        google_id = user_info.get('sub')
+        
+        if not email:
+            raise HTTPException(status_code=400, detail="Email not found in Google credential")
+        
+        # Check if user exists
+        db_user = db.query(User).filter(User.email == email).first()
+        
+        if not db_user:
+            # Create new user
+            db_user = User(
+                email=email,
+                full_name=name or email.split('@')[0],
+                hashed_password="",  # No password for Google users
+                is_active=True
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=30)
+        access_token = create_access_token(
+            data={"sub": db_user.email}, expires_delta=access_token_expires
+        )
+        
+        return {"access_token": access_token, "token_type": "bearer"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Google authentication failed: {str(e)}")
 
 @app.get("/health")
 async def health_check():

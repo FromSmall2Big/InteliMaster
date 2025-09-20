@@ -16,12 +16,13 @@ interface PortfoliosData {
 }
 
 async function getPortfolios(): Promise<Portfolio[]> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'}/images/portfolios/portfolios.json`, {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const response = await fetch(`${baseUrl}/images/portfolios/portfolios.json`, {
     cache: 'no-store'
   })
   
   if (!response.ok) {
-    throw new Error('Failed to fetch portfolios')
+    throw new Error(`Failed to fetch portfolios: ${response.status} ${response.statusText}`)
   }
   
   const data: PortfoliosData = await response.json()

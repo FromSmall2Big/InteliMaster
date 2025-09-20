@@ -14,16 +14,16 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
               <Image
                 src="/images/logo.png"
                 alt="InteliMaster Logo"
-                width={120}
-                height={40}
-                className="h-20 w-auto m-2"
+                width={80}
+                height={30}
+                className="h-16 w-auto"
                 priority
               />
-              <h1 className="text-3xl font-extrabold text-blue-600 m-2 tracking-tight relative overflow-hidden">
+              <h1 className="text-2xl font-extrabold text-blue-600 ml-3 tracking-tight relative overflow-hidden">
                 <span className="relative z-10">InteliMaster</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-diagonal-sweep"></div>
               </h1>

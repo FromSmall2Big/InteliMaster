@@ -6,7 +6,7 @@ export default function AboutPreview() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">About InteliMaster</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">About InteliMasters L.L.C.</h2>
             <p className="text-lg text-gray-600 mb-6">
               We are a passionate team of software developers, designers, and engineers dedicated to creating exceptional
               digital solutions.
