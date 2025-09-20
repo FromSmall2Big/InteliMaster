@@ -93,10 +93,50 @@ read -p "Do you want to use Docker for PostgreSQL? (y/n): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Setting up PostgreSQL with Docker..."
-    ./setup-postgresql-docker.sh
+    if [ -f "setup-postgresql-docker.sh" ]; then
+        chmod +x setup-postgresql-docker.sh
+        ./setup-postgresql-docker.sh
+    else
+        echo "❌ setup-postgresql-docker.sh not found!"
+        echo "Falling back to native PostgreSQL setup..."
+        chmod +x setup-postgresql.sh
+        ./setup-postgresql.sh
+    fi
 else
     echo "Setting up PostgreSQL natively..."
-    ./setup-postgresql.sh
+    if [ -f "setup-postgresql.sh" ]; then
+        chmod +x setup-postgresql.sh
+        ./setup-postgresql.sh
+    else
+        echo "❌ setup-postgresql.sh not found!"
+        echo "Please run the PostgreSQL setup manually or use Docker."
+        exit 1
+    fi
+fi
+
+# Check if database setup was successful
+echo ""
+echo "Step 7.1: Verifying database setup..."
+if [ -f "backend/.env" ]; then
+    echo "✅ Environment file created"
+else
+    echo "❌ Environment file not found. Creating it..."
+    chmod +x create-env.sh
+    ./create-env.sh
+fi
+
+# Test database connection
+if PGPASSWORD='intelimaster123' psql -h localhost -U intelimaster_user -d intelimaster -c "SELECT 1;" >/dev/null 2>&1; then
+    echo "✅ Database connection verified"
+else
+    echo "❌ Database connection failed!"
+    echo "Running PostgreSQL troubleshooting script..."
+    if [ -f "fix-postgresql-ubuntu.sh" ]; then
+        chmod +x fix-postgresql-ubuntu.sh
+        ./fix-postgresql-ubuntu.sh
+    else
+        echo "Please run the PostgreSQL setup again or check the configuration manually."
+    fi
 fi
 
 # Install project dependencies
@@ -150,3 +190,4 @@ echo "    docker stop postgres-intelimaster"
 echo "    docker exec -it postgres-intelimaster psql -U intelimaster_user -d intelimaster"
 echo ""
 echo "Happy coding! 🚀"
+

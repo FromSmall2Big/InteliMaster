@@ -57,6 +57,50 @@ sudo -u postgres psql -c "CREATE USER intelimaster_user WITH PASSWORD 'intelimas
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE intelimaster TO intelimaster_user;"
 sudo -u postgres psql -c "ALTER USER intelimaster_user CREATEDB;"
 
+# Configure PostgreSQL authentication for local connections
+echo ""
+echo "Step 4.1: Configuring PostgreSQL authentication..."
+PG_VERSION=$(sudo -u postgres psql -t -c "SELECT version();" | grep -oP '\d+\.\d+' | head -1)
+PG_CONFIG_DIR="/etc/postgresql/${PG_VERSION}/main"
+
+if [ -d "$PG_CONFIG_DIR" ]; then
+    echo "PostgreSQL version: $PG_VERSION"
+    echo "Config directory: $PG_CONFIG_DIR"
+    
+    # Backup original pg_hba.conf
+    sudo cp "$PG_CONFIG_DIR/pg_hba.conf" "$PG_CONFIG_DIR/pg_hba.conf.backup"
+    
+    # Add local connection rules if not already present
+    if ! sudo grep -q "local   intelimaster" "$PG_CONFIG_DIR/pg_hba.conf"; then
+        echo "Adding local authentication rules..."
+        sudo tee -a "$PG_CONFIG_DIR/pg_hba.conf" > /dev/null << EOF
+
+# InteliMaster local connections
+local   intelimaster         intelimaster_user                    md5
+host    intelimaster         intelimaster_user    127.0.0.1/32   md5
+host    intelimaster         intelimaster_user    ::1/128        md5
+EOF
+    fi
+    
+    # Restart PostgreSQL to apply changes
+    echo "Restarting PostgreSQL to apply authentication changes..."
+    sudo systemctl restart postgresql
+    
+    # Wait for PostgreSQL to start
+    sleep 3
+    
+    # Check if PostgreSQL is running after restart
+    if ! sudo systemctl is-active --quiet postgresql; then
+        echo "Error: PostgreSQL failed to restart"
+        echo "Restoring backup configuration..."
+        sudo cp "$PG_CONFIG_DIR/pg_hba.conf.backup" "$PG_CONFIG_DIR/pg_hba.conf"
+        sudo systemctl restart postgresql
+        echo "Please check PostgreSQL configuration manually"
+    fi
+else
+    echo "Warning: Could not find PostgreSQL config directory. You may need to configure authentication manually."
+fi
+
 # Test connection
 echo ""
 echo "Step 5: Testing database connection..."
@@ -71,8 +115,23 @@ fi
 echo ""
 echo "Step 6: Creating environment file..."
 cat > backend/.env << EOF
+# Security Configuration
 SECRET_KEY=your-secret-key-change-this-in-production-12345
-DATABASE_URL=postgresql://intelimaster_user:intelimaster123@localhost:5432/intelimaster
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=intelimaster
+DB_USER=intelimaster_user
+DB_PASSWORD=intelimaster123
+
+# Application Configuration
+DEBUG=True
+HOST=0.0.0.0
+PORT=8000
+
+# Frontend Configuration
+FRONTEND_URL=http://localhost:3000
 EOF
 
 echo "Environment file created at backend/.env"
@@ -101,3 +160,4 @@ echo "  Start: sudo systemctl start postgresql"
 echo "  Stop: sudo systemctl stop postgresql"
 echo "  Status: sudo systemctl status postgresql"
 echo "  Connect: psql -h localhost -U intelimaster_user -d intelimaster"
+

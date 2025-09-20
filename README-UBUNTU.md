@@ -120,6 +120,21 @@ docker rm -f postgres-intelimaster
 
 ## Troubleshooting
 
+### Quick Fix for PostgreSQL Issues
+
+If you're having PostgreSQL connection problems, run the automated troubleshooting script:
+
+```bash
+./fix-postgresql-ubuntu.sh
+```
+
+This script will:
+- Check PostgreSQL service status
+- Fix authentication configuration
+- Recreate database and user if needed
+- Create missing environment files
+- Install Python dependencies
+
 ### Common Issues
 
 1. **Permission denied when running scripts**
@@ -127,13 +142,29 @@ docker rm -f postgres-intelimaster
    chmod +x *.sh
    ```
 
-2. **Docker permission denied**
+2. **PostgreSQL connection errors**
+   ```bash
+   # Run the automated fix script
+   ./fix-postgresql-ubuntu.sh
+   
+   # Or manually check:
+   sudo systemctl status postgresql
+   sudo systemctl start postgresql
+   psql -h localhost -U intelimaster_user -d intelimaster
+   ```
+
+3. **Missing environment file**
+   ```bash
+   ./create-env.sh
+   ```
+
+4. **Docker permission denied**
    ```bash
    sudo usermod -aG docker $USER
    # Log out and log back in
    ```
 
-3. **Python virtual environment issues**
+5. **Python virtual environment issues**
    ```bash
    cd backend
    rm -rf venv
@@ -142,17 +173,21 @@ docker rm -f postgres-intelimaster
    pip install -r requirements.txt
    ```
 
-4. **Node.js dependencies issues**
+6. **Node.js dependencies issues**
    ```bash
    cd frontend
    rm -rf node_modules package-lock.json
    npm install
    ```
 
-5. **Database connection issues**
-   - Check if PostgreSQL is running: `sudo systemctl status postgresql`
-   - Check if Docker container is running: `docker ps`
-   - Verify environment file: `cat backend/.env`
+7. **Database authentication issues**
+   ```bash
+   # Check PostgreSQL authentication configuration
+   sudo cat /etc/postgresql/*/main/pg_hba.conf
+   
+   # Restart PostgreSQL after config changes
+   sudo systemctl restart postgresql
+   ```
 
 ### Getting Help
 
@@ -193,3 +228,4 @@ For production deployment on Ubuntu:
 6. Set up monitoring and logging
 
 Happy coding! 🚀
+

@@ -154,3 +154,4 @@ echo "  Start PostgreSQL: docker start postgres-intelimaster"
 echo "  View logs: docker logs postgres-intelimaster"
 echo "  Connect to DB: docker exec -it postgres-intelimaster psql -U intelimaster_user -d intelimaster"
 echo "  Remove container: docker rm -f postgres-intelimaster"
+
