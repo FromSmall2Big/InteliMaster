@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'InteliMaster - Software Development Company',
   description: 'Professional software development services and solutions',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

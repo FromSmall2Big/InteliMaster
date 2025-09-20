@@ -23,8 +23,9 @@ export default function Header() {
                 className="h-20 w-auto m-2"
                 priority
               />
-              <h1 className="text-3xl font-bold text-primary-600 m-2">
-                InteliMaster
+              <h1 className="text-3xl font-extrabold text-blue-600 m-2 tracking-tight relative overflow-hidden">
+                <span className="relative z-10">InteliMaster</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-diagonal-sweep"></div>
               </h1>
             </Link>
           </div>
